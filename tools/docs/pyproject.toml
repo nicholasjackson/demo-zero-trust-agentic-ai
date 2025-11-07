@@ -1,0 +1,10 @@
+[project]
+name = "docs-tool"
+version = "0.1.0"
+description = "Example vulnerable internal tool for documentation purposes."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.13.0.2",
+    "uvicorn>=0.32.0",
+]

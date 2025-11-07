@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "best_practices": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/home/nicj/code/github.com/nicholasjackson/demo-agentic-zero-trust/tools/docs",
+        "run",
+        "python",
+        "docs.py"
+      ]
+    }
+  }
+}
