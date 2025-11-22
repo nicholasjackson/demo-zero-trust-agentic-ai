@@ -23,6 +23,18 @@ resource "template" "weather_tool_secret" {
   }
 }
 
+resource "k8s_config" "exfil-server" {
+  disabled = !variable.install_app
+
+  cluster = resource.k8s_cluster.demo
+
+  paths = [
+    "./k8s/exfil-server.yaml",
+  ]
+
+  wait_until_ready = true
+}
+
 resource "k8s_config" "weather_setup" {
   disabled = !variable.install_app
 
@@ -48,6 +60,20 @@ resource "ingress" "weather_agent" {
 
     config = {
       service   = "weather-agent"
+      namespace = "agents"
+    }
+  }
+}
+
+resource "ingress" "exfil_server" {
+  port = 18080
+
+  target {
+    resource = resource.k8s_cluster.demo
+    port     = 8080
+
+    config = {
+      service   = "exfil-server"
       namespace = "agents"
     }
   }

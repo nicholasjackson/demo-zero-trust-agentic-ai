@@ -1,0 +1,54 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: exfil-server
+  namespace: agents
+  labels:
+    app: exfil-server
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: exfil-server
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: exfil-server
+  namespace: agents
+  labels:
+    app: exfil-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: exfil-server
+  template:
+    metadata:
+      labels:
+        app: exfil-server
+    spec:
+      containers:
+      - name: exfil-server
+        image: ghcr.io/nicholasjackson/exfil-server:0.0.1
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8080"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"

@@ -1,0 +1,64 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-db-db
+  namespace: agents
+  labels:
+    app: postgresql-db-db
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+    name: postgresql-db-db
+  selector:
+    app: postgresql-db
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-db
+  namespace: agents
+  labels:
+    app: postgresql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql-db
+  template:
+    metadata:
+      labels:
+        app: postgresql-db
+    spec:
+      containers:
+      - name: postgresql-db
+        image: postgres:16-alpine
+        ports:
+        - containerPort: 5432
+          name: postgresql-db
+        env:
+        - name: POSTGRES_DB
+          value: "langgraph"
+        - name: POSTGRES_USER
+          value: "langgraph"
+        - name: POSTGRES_PASSWORD
+          value: "langgraph"
+        - name: PGDATA
+          value: /var/lib/postgresql-db/data/pgdata
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: postgresql-db-data
+          mountPath: /var/lib/postgresql-db/data
+      volumes:
+      - name: postgresql-db-data
+        emptyDir: {}
