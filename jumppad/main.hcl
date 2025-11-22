@@ -16,7 +16,13 @@ variable "plugin_platform" {
 }
 
 variable "run_scripts" {
-  default = true
+  default     = true
+  description = "Run the setup scripts for vault and keycloak"
+}
+
+variable "install_app" {
+  default     = true
+  description = "Install the application to kubernetes"
 }
 
 variable "enable_keycloak" {

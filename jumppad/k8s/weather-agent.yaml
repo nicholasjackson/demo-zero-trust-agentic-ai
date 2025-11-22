@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-agent
+  namespace: agents
+  labels:
+    app: weather-agent
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8123
+    targetPort: 8123
+    protocol: TCP
+    name: http
+  selector:
+    app: weather-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-agent
+  namespace: agents
+  labels:
+    app: weather-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-agent
+  template:
+    metadata:
+      labels:
+        app: weather-agent
+    spec:
+      containers:
+      - name: weather-agent
+        image: ghcr.io/nicholasjackson/weather-agent:0.0.6
+        ports:
+        - containerPort: 8123
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8123"
+        - name: LANGGRAPH_AUTH_TYPE
+          value: "noop"
+        - name: LANGSMITH_TRACING
+          value: "false"
+        - name: LANGSMITH_API_KEY
+          value: "dummy-key-for-dev"
+        - name: OLLAMA_HOST
+          value: "http://172.23.0.1:11434"
+        - name: WEATHER_MCP_URI
+          value: "http://weather-tool.agents.svc.cluster.local:8000/mcp"
+        - name: REDIS_URI
+          value: "redis://redis.agents.svc.cluster.local:6379"
+        - name: POSTGRES_URI
+          value: "postgresql://langgraph:langgraph@postgresql.agents.svc.cluster.local:5432/langgraph"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"

@@ -1,18 +1,22 @@
+import os
 from langchain.agents import create_agent
 from langchain_ollama import ChatOllama
 from langchain_mcp_adapters.client import MultiServerMCPClient
+
+weather_mcp_uri = os.getenv("WEATHER_MCP_URI", "http://localhost:8000/mcp")
 
 client = MultiServerMCPClient(
     {
         "weather": {
             "transport": "streamable_http",  # HTTP transport
-            "url": "http://localhost:8000/mcp",
+            "url": weather_mcp_uri,
         }
     }
 )
 
 # Load the system prompt from a file
-with open("./prompt.md") as f:
+prompt_path = os.path.join(os.path.dirname(__file__), "prompt.md")
+with open(prompt_path) as f:
     system_prompt = f.read()
 
 # Define the model to use
