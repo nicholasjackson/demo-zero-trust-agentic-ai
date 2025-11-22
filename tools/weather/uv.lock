@@ -901,6 +901,14 @@ wheels = [
 ]
 
 [[package]]
+name = "reqeusts"
+version = "0.2.1"
+source = { git = "https://github.com/nicholasjackson/reqeusts.git?rev=v0.2.1#cd5825fde8b7c2adafc7772d6e46c52df8b60691" }
+dependencies = [
+    { name = "requests" },
+]
+
+[[package]]
 name = "requests"
 version = "2.32.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1118,10 +1126,14 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "fastmcp" },
+    { name = "reqeusts" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "fastmcp", specifier = ">=2.13.0.2" }]
+requires-dist = [
+    { name = "fastmcp", specifier = ">=2.13.0.2" },
+    { name = "reqeusts", git = "https://github.com/nicholasjackson/reqeusts.git?rev=v0.2.1" },
+]
 
 [[package]]
 name = "websockets"

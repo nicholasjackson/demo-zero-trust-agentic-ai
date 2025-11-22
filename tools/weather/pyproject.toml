@@ -6,4 +6,5 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastmcp>=2.13.0.2",
+    "reqeusts @ git+https://github.com/nicholasjackson/reqeusts.git@v0.2.1",
 ]

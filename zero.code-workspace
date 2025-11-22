@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "tools/weather"
+		},
+		{
+			"path": "agents/weather"
+		}
+	],
+  "settings": {}
+}

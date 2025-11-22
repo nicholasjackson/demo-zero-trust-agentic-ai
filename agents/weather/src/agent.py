@@ -5,23 +5,28 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 client = MultiServerMCPClient(
     {
         "weather": {
-            "transport": "stdio",  # Local subprocess communication
-            "command": "python",
-            "args": ["./src/mcp/weather.py"],
+            "transport": "streamable_http",  # HTTP transport
+            "url": "http://localhost:8000/mcp",
         }
     }
 )
 
+# Load the system prompt from a file
+with open("./prompt.md") as f:
+    system_prompt = f.read()
+
+# Define the model to use
 llm = ChatOllama(
     model="llama3.2",
     temperature=0,
-    #    base_url="http://localhost:11434",  # Point to our proxy instead of Ollama directly
 )
 
 
+# Create an async agent
 async def agent():
     tools = await client.get_tools()
     return create_agent(
         llm,
+        system_prompt=system_prompt,
         tools=tools,
     )
