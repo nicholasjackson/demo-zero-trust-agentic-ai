@@ -1,0 +1,58 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: customer-agent
+  namespace: agents
+  labels:
+    app: customer-agent
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8124
+    targetPort: 8124
+    protocol: TCP
+    name: http
+  selector:
+    app: customer-agent
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-agent
+  namespace: agents
+  labels:
+    app: customer-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customer-agent
+  template:
+    metadata:
+      labels:
+        app: customer-agent
+    spec:
+      containers:
+      - name: customer-agent
+        image: ghcr.io/nicholasjackson/customer-agent:0.0.1
+        ports:
+        - containerPort: 8124
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8124"
+        - name: OLLAMA_HOST
+          value: "http://172.23.0.1:11434"
+        - name: CUSTOMER_MCP_URI
+          value: "http://customer-tool.agents.svc.cluster.local:8001/mcp"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"

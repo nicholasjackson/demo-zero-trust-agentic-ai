@@ -1,0 +1,66 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: customer-tool
+  namespace: agents
+  labels:
+    app: customer-tool
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http
+  selector:
+    app: customer-tool
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-tool
+  namespace: agents
+  labels:
+    app: customer-tool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customer-tool
+  template:
+    metadata:
+      labels:
+        app: customer-tool
+    spec:
+      containers:
+      - name: customer-tool
+        image: ghcr.io/nicholasjackson/customer-tool:0.0.1
+        ports:
+        - containerPort: 8001
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8001"
+        - name: USE_HTTPS
+          value: "false"
+        - name: DB_HOST
+          value: "customer-tool-db.agents.svc.cluster.local"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "customers"
+        - name: DB_USER
+          value: "admin"
+        - name: DB_PASSWORD
+          value: "password"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

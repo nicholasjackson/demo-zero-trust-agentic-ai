@@ -1,14 +1,20 @@
 {
 	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "tools/weather"
-		},
-		{
-			"path": "agents/weather"
-		}
-	],
+    {
+      "path": "."
+    },
+    {
+      "path": "tools/weather"
+    },
+    {
+      "path": "agents/weather"
+    },
+    {
+      "path": "agents/customer"
+    },
+    {
+      "path": "tools/customer"
+    }
+  ],
   "settings": {}
 }
