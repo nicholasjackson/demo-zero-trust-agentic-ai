@@ -48,7 +48,8 @@ resource "k8s_config" "weather_setup" {
     "./k8s/weather-tool.yaml",
     "./k8s/customer-agent.yaml",
     "./k8s/customer-tool.yaml",
-    "./k8s/customer-tool-db.yaml"
+    "./k8s/customer-tool-db.yaml",
+    "./k8s/chat-ui.yaml",
   ]
 
   wait_until_ready = true
@@ -105,6 +106,20 @@ resource "ingress" "customer_database" {
 
     config = {
       service   = "customer-tool-db"
+      namespace = "agents"
+    }
+  }
+}
+
+resource "ingress" "chat_ui" {
+  port = 18090
+
+  target {
+    resource = resource.k8s_cluster.demo
+    port     = 80
+
+    config = {
+      service   = "chat-ui"
       namespace = "agents"
     }
   }

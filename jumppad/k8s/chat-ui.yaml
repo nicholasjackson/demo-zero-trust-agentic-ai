@@ -1,0 +1,146 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chat-ui-config
+  namespace: agents
+data:
+  config.js: |
+    window.AGENT_CONFIG = {
+      agents: [
+        {
+          id: 'weather',
+          name: 'Weather',
+          icon: '🌤️',
+          description: 'Get weather information',
+          baseUrl: '/api/weather'
+        },
+        {
+          id: 'customer',
+          name: 'Customer',
+          icon: '👤',
+          description: 'Customer support queries',
+          baseUrl: '/api/customer'
+        }
+      ]
+    };
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chat-ui-nginx-config
+  namespace: agents
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+        root /usr/share/nginx/html;
+        index index.html;
+
+        # Serve static files
+        location / {
+            try_files $uri $uri/ /index.html;
+        }
+
+        # Proxy API requests to agent services
+        location /api/weather/ {
+            proxy_pass http://weather-agent.agents.svc.cluster.local:8123/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        location /api/customer/ {
+            proxy_pass http://customer-agent.agents.svc.cluster.local:8124/;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_types text/css application/javascript application/json;
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-ui
+  namespace: agents
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-ui
+  template:
+    metadata:
+      labels:
+        app: chat-ui
+    spec:
+      containers:
+      - name: chat-ui
+        image: ghcr.io/nicholasjackson/chat-ui:0.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: http
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+          readOnly: true
+        - name: app-config
+          mountPath: /usr/share/nginx/html/config.js
+          subPath: config.js
+          readOnly: true
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: chat-ui-nginx-config
+      - name: app-config
+        configMap:
+          name: chat-ui-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-ui
+  namespace: agents
+spec:
+  selector:
+    app: chat-ui
+  ports:
+  - port: 80
+    targetPort: 80
+    name: http
+  type: ClusterIP
