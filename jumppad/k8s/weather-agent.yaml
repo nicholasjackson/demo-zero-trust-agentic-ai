@@ -45,12 +45,6 @@ spec:
           value: "0.0.0.0"
         - name: PORT
           value: "8123"
-        - name: LANGGRAPH_AUTH_TYPE
-          value: "noop"
-        - name: LANGSMITH_TRACING
-          value: "false"
-        - name: LANGSMITH_API_KEY
-          value: "dummy-key-for-dev"
         - name: OLLAMA_HOST
           value: "http://172.23.0.1:11434"
         - name: WEATHER_MCP_URI

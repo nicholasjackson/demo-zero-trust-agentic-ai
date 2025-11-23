@@ -29,6 +29,21 @@ variable "enable_keycloak" {
   default = false
 }
 
+variable "db_user" {
+  default     = "admin"
+  description = "User for the customer tool database"
+}
+
+variable "db_password" {
+  default     = "password"
+  description = "Password for the customer tool database"
+}
+
+variable "db_name" {
+  default     = "customers"
+  description = "Name for the customer tool database"
+}
+
 # Create an isolated network for the demo
 resource "network" "demo" {
   subnet = "10.16.0.0/16"
@@ -60,4 +75,24 @@ output "VAULT_ADDR" {
 
 output "VAULT_TOKEN" {
   value = "root"
+}
+
+output "DB_USER" {
+  value = variable.db_user
+}
+
+output "DB_PASSWORD" {
+  value = variable.db_password
+}
+
+output "DB_HOST" {
+  value = "localhost"
+}
+
+output "DB_NAME" {
+  value = variable.db_name
+}
+
+output "DB_PORT" {
+  value = resource.ingress.customer_database.port
 }

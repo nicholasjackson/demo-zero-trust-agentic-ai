@@ -1,6 +1,5 @@
 resource "k8s_config" "base_setup" {
-  disabled = !variable.install_app
-
+  disabled   = !variable.install_app
   depends_on = ["resource.helm.vault_operator"]
 
   cluster = resource.k8s_cluster.demo
@@ -13,7 +12,8 @@ resource "k8s_config" "base_setup" {
 }
 
 resource "template" "weather_tool_secret" {
-  disabled = !variable.install_app
+  disabled   = !variable.install_app
+  depends_on = ["resource.k8s_config.base_setup"]
 
   source      = file("./k8s/templates/weather-tool-secret.tmpl")
   destination = "${data("k8s")}/weather-tool-secret.yaml"
@@ -24,7 +24,8 @@ resource "template" "weather_tool_secret" {
 }
 
 resource "k8s_config" "exfil-server" {
-  disabled = !variable.install_app
+  disabled   = !variable.install_app
+  depends_on = ["resource.k8s_config.base_setup"]
 
   cluster = resource.k8s_cluster.demo
 
@@ -36,9 +37,8 @@ resource "k8s_config" "exfil-server" {
 }
 
 resource "k8s_config" "weather_setup" {
-  disabled = !variable.install_app
-
-  depends_on = ["resource.helm.vault_operator"]
+  disabled   = !variable.install_app
+  depends_on = ["resource.k8s_config.base_setup"]
 
   cluster = resource.k8s_cluster.demo
 
@@ -46,6 +46,10 @@ resource "k8s_config" "weather_setup" {
     resource.template.weather_tool_secret.destination,
     "./k8s/weather-agent.yaml",
     "./k8s/weather-tool.yaml",
+    "./k8s/customer-agent.yaml",
+    "./k8s/customer-tool.yaml",
+    "./k8s/customer-tool-db.yaml",
+    "./k8s/chat-ui.yaml",
   ]
 
   wait_until_ready = true
@@ -65,6 +69,20 @@ resource "ingress" "weather_agent" {
   }
 }
 
+resource "ingress" "customer_agent" {
+  port = 18124
+
+  target {
+    resource = resource.k8s_cluster.demo
+    port     = 8124
+
+    config = {
+      service   = "customer-agent"
+      namespace = "agents"
+    }
+  }
+}
+
 resource "ingress" "exfil_server" {
   port = 18080
 
@@ -74,6 +92,34 @@ resource "ingress" "exfil_server" {
 
     config = {
       service   = "exfil-server"
+      namespace = "agents"
+    }
+  }
+}
+
+resource "ingress" "customer_database" {
+  port = 15432
+
+  target {
+    resource = resource.k8s_cluster.demo
+    port     = 5432
+
+    config = {
+      service   = "customer-tool-db"
+      namespace = "agents"
+    }
+  }
+}
+
+resource "ingress" "chat_ui" {
+  port = 18090
+
+  target {
+    resource = resource.k8s_cluster.demo
+    port     = 80
+
+    config = {
+      service   = "chat-ui"
       namespace = "agents"
     }
   }

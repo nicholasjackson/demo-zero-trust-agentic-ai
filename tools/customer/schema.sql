@@ -1,0 +1,258 @@
+-- Customer Database Schema
+-- Creates tables for customers, orders, and order items with sample data
+
+-- Drop tables if they exist
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS customers CASCADE;
+
+-- Create customers table
+CREATE TABLE customers (
+    customer_id SERIAL PRIMARY KEY,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    address_line1 VARCHAR(255),
+    address_line2 VARCHAR(255),
+    city VARCHAR(100),
+    state VARCHAR(50),
+    postal_code VARCHAR(20),
+    country VARCHAR(100) DEFAULT 'USA',
+    account_status VARCHAR(20) DEFAULT 'active',
+    credit_card_last4 VARCHAR(4),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create orders table
+CREATE TABLE orders (
+    order_id SERIAL PRIMARY KEY,
+    customer_id INTEGER NOT NULL REFERENCES customers(customer_id) ON DELETE CASCADE,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    shipping_address_line1 VARCHAR(255),
+    shipping_address_line2 VARCHAR(255),
+    shipping_city VARCHAR(100),
+    shipping_state VARCHAR(50),
+    shipping_postal_code VARCHAR(20),
+    shipping_country VARCHAR(100) DEFAULT 'USA',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create order_items table
+CREATE TABLE order_items (
+    item_id SERIAL PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
+    product_name VARCHAR(255) NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    unit_price DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for better query performance
+CREATE INDEX idx_customers_email ON customers(email);
+CREATE INDEX idx_customers_status ON customers(account_status);
+CREATE INDEX idx_orders_customer_id ON orders(customer_id);
+CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+
+-- Insert 100 customers
+INSERT INTO customers (first_name, last_name, email, phone, address_line1, city, state, postal_code, account_status, credit_card_last4) VALUES
+('John', 'Doe', 'john.doe@example.com', '555-0101', '123 Main St', 'New York', 'NY', '10001', 'active', '4242'),
+('Jane', 'Smith', 'jane.smith@example.com', '555-0102', '456 Oak Ave', 'Los Angeles', 'CA', '90001', 'active', '5555'),
+('Michael', 'Johnson', 'michael.johnson@example.com', '555-0103', '789 Pine Rd', 'Chicago', 'IL', '60601', 'active', '6789'),
+('Emily', 'Williams', 'emily.williams@example.com', '555-0104', '321 Elm St', 'Houston', 'TX', '77001', 'active', '1234'),
+('David', 'Brown', 'david.brown@example.com', '555-0105', '654 Maple Dr', 'Phoenix', 'AZ', '85001', 'inactive', '5678'),
+('Sarah', 'Jones', 'sarah.jones@example.com', '555-0106', '987 Cedar Ln', 'Philadelphia', 'PA', '19101', 'active', '9012'),
+('Robert', 'Garcia', 'robert.garcia@example.com', '555-0107', '147 Birch Ct', 'San Antonio', 'TX', '78201', 'active', '3456'),
+('Jennifer', 'Martinez', 'jennifer.martinez@example.com', '555-0108', '258 Spruce Way', 'San Diego', 'CA', '92101', 'active', '7890'),
+('William', 'Rodriguez', 'william.rodriguez@example.com', '555-0109', '369 Willow Blvd', 'Dallas', 'TX', '75201', 'active', '2345'),
+('Lisa', 'Hernandez', 'lisa.hernandez@example.com', '555-0110', '741 Ash St', 'San Jose', 'CA', '95101', 'active', '6789'),
+('James', 'Lopez', 'james.lopez@example.com', '555-0111', '852 Cherry Ave', 'Austin', 'TX', '73301', 'active', '0123'),
+('Mary', 'Gonzalez', 'mary.gonzalez@example.com', '555-0112', '963 Poplar Rd', 'Jacksonville', 'FL', '32099', 'active', '4567'),
+('Christopher', 'Wilson', 'christopher.wilson@example.com', '555-0113', '159 Hickory Dr', 'Fort Worth', 'TX', '76101', 'suspended', '8901'),
+('Patricia', 'Anderson', 'patricia.anderson@example.com', '555-0114', '357 Walnut Ln', 'Columbus', 'OH', '43004', 'active', '2345'),
+('Daniel', 'Thomas', 'daniel.thomas@example.com', '555-0115', '486 Beech Ct', 'San Francisco', 'CA', '94102', 'active', '6789'),
+('Nancy', 'Taylor', 'nancy.taylor@example.com', '555-0116', '579 Magnolia Way', 'Charlotte', 'NC', '28201', 'active', '0123'),
+('Matthew', 'Moore', 'matthew.moore@example.com', '555-0117', '680 Sycamore Blvd', 'Indianapolis', 'IN', '46201', 'active', '4567'),
+('Betty', 'Jackson', 'betty.jackson@example.com', '555-0118', '791 Redwood St', 'Seattle', 'WA', '98101', 'active', '8901'),
+('Anthony', 'Martin', 'anthony.martin@example.com', '555-0119', '802 Dogwood Ave', 'Denver', 'CO', '80201', 'active', '2345'),
+('Sandra', 'Lee', 'sandra.lee@example.com', '555-0120', '913 Fir Rd', 'Washington', 'DC', '20001', 'active', '6789'),
+('Mark', 'Perez', 'mark.perez@example.com', '555-0121', '124 Cypress Dr', 'Boston', 'MA', '02101', 'active', '0123'),
+('Donna', 'Thompson', 'donna.thompson@example.com', '555-0122', '235 Juniper Ln', 'El Paso', 'TX', '79901', 'active', '4567'),
+('Paul', 'White', 'paul.white@example.com', '555-0123', '346 Palm Ct', 'Detroit', 'MI', '48201', 'inactive', '8901'),
+('Carol', 'Harris', 'carol.harris@example.com', '555-0124', '457 Laurel Way', 'Nashville', 'TN', '37201', 'active', '2345'),
+('Steven', 'Sanchez', 'steven.sanchez@example.com', '555-0125', '568 Sequoia Blvd', 'Memphis', 'TN', '37501', 'active', '6789'),
+('Margaret', 'Clark', 'margaret.clark@example.com', '555-0126', '679 Cottonwood St', 'Portland', 'OR', '97201', 'active', '0123'),
+('Joshua', 'Ramirez', 'joshua.ramirez@example.com', '555-0127', '780 Mahogany Ave', 'Oklahoma City', 'OK', '73101', 'active', '4567'),
+('Michelle', 'Lewis', 'michelle.lewis@example.com', '555-0128', '891 Chestnut Rd', 'Las Vegas', 'NV', '88901', 'active', '8901'),
+('Kevin', 'Robinson', 'kevin.robinson@example.com', '555-0129', '902 Acacia Dr', 'Louisville', 'KY', '40201', 'active', '2345'),
+('Ashley', 'Walker', 'ashley.walker@example.com', '555-0130', '113 Eucalyptus Ln', 'Baltimore', 'MD', '21201', 'active', '6789'),
+('Brian', 'Young', 'brian.young@example.com', '555-0131', '224 Bamboo Ct', 'Milwaukee', 'WI', '53201', 'active', '0123'),
+('Dorothy', 'Allen', 'dorothy.allen@example.com', '555-0132', '335 Oakwood Way', 'Albuquerque', 'NM', '87101', 'suspended', '4567'),
+('Jason', 'King', 'jason.king@example.com', '555-0133', '446 Elmwood Blvd', 'Tucson', 'AZ', '85701', 'active', '8901'),
+('Kimberly', 'Wright', 'kimberly.wright@example.com', '555-0134', '557 Maplewood St', 'Fresno', 'CA', '93650', 'active', '2345'),
+('Gary', 'Scott', 'gary.scott@example.com', '555-0135', '668 Pinewood Ave', 'Sacramento', 'CA', '94203', 'active', '6789'),
+('Amanda', 'Torres', 'amanda.torres@example.com', '555-0136', '779 Cedarwood Rd', 'Long Beach', 'CA', '90801', 'active', '0123'),
+('George', 'Nguyen', 'george.nguyen@example.com', '555-0137', '880 Ashwood Dr', 'Kansas City', 'MO', '64101', 'active', '4567'),
+('Laura', 'Hill', 'laura.hill@example.com', '555-0138', '991 Birchwood Ln', 'Mesa', 'AZ', '85201', 'active', '8901'),
+('Kenneth', 'Flores', 'kenneth.flores@example.com', '555-0139', '102 Willowwood Ct', 'Virginia Beach', 'VA', '23450', 'active', '2345'),
+('Melissa', 'Green', 'melissa.green@example.com', '555-0140', '213 Cherywood Way', 'Atlanta', 'GA', '30301', 'active', '6789'),
+('Ronald', 'Adams', 'ronald.adams@example.com', '555-0141', '324 Rosewood Blvd', 'Colorado Springs', 'CO', '80901', 'active', '0123'),
+('Rebecca', 'Nelson', 'rebecca.nelson@example.com', '555-0142', '435 Teakwood St', 'Raleigh', 'NC', '27601', 'active', '4567'),
+('Edward', 'Baker', 'edward.baker@example.com', '555-0143', '546 Oakridge Ave', 'Omaha', 'NE', '68101', 'inactive', '8901'),
+('Stephanie', 'Hall', 'stephanie.hall@example.com', '555-0144', '657 Riverside Rd', 'Miami', 'FL', '33101', 'active', '2345'),
+('Jeffrey', 'Rivera', 'jeffrey.rivera@example.com', '555-0145', '768 Lakeside Dr', 'Oakland', 'CA', '94601', 'active', '6789'),
+('Sharon', 'Campbell', 'sharon.campbell@example.com', '555-0146', '879 Hillside Ln', 'Minneapolis', 'MN', '55401', 'active', '0123'),
+('Ryan', 'Mitchell', 'ryan.mitchell@example.com', '555-0147', '980 Parkview Ct', 'Tulsa', 'OK', '74101', 'active', '4567'),
+('Cynthia', 'Roberts', 'cynthia.roberts@example.com', '555-0148', '191 Skyview Way', 'Cleveland', 'OH', '44101', 'active', '8901'),
+('Jacob', 'Carter', 'jacob.carter@example.com', '555-0149', '292 Mountain Blvd', 'Wichita', 'KS', '67201', 'active', '2345'),
+('Kathleen', 'Phillips', 'kathleen.phillips@example.com', '555-0150', '393 Valley St', 'Arlington', 'TX', '76001', 'active', '6789'),
+('Nicholas', 'Evans', 'nicholas.evans@example.com', '555-0151', '494 Forest Ave', 'New Orleans', 'LA', '70112', 'active', '0123'),
+('Amy', 'Turner', 'amy.turner@example.com', '555-0152', '595 Meadow Rd', 'Bakersfield', 'CA', '93301', 'active', '4567'),
+('Larry', 'Torres', 'larry.torres@example.com', '555-0153', '696 Prairie Dr', 'Tampa', 'FL', '33601', 'suspended', '8901'),
+('Anna', 'Parker', 'anna.parker@example.com', '555-0154', '797 Desert Ln', 'Honolulu', 'HI', '96801', 'active', '2345'),
+('Justin', 'Collins', 'justin.collins@example.com', '555-0155', '898 Ocean Ct', 'Aurora', 'CO', '80010', 'active', '6789'),
+('Rachel', 'Edwards', 'rachel.edwards@example.com', '555-0156', '999 Beach Way', 'Anaheim', 'CA', '92801', 'active', '0123'),
+('Scott', 'Stewart', 'scott.stewart@example.com', '555-0157', '100 Harbor Blvd', 'Santa Ana', 'CA', '92701', 'active', '4567'),
+('Heather', 'Morris', 'heather.morris@example.com', '555-0158', '211 Bay St', 'St. Louis', 'MO', '63101', 'active', '8901'),
+('Brandon', 'Rogers', 'brandon.rogers@example.com', '555-0159', '322 Port Ave', 'Riverside', 'CA', '92501', 'active', '2345'),
+('Nicole', 'Reed', 'nicole.reed@example.com', '555-0160', '433 Marina Rd', 'Corpus Christi', 'TX', '78401', 'active', '6789'),
+('Austin', 'Cook', 'austin.cook@example.com', '555-0161', '544 Wharf Dr', 'Lexington', 'KY', '40502', 'active', '0123'),
+('Samantha', 'Morgan', 'samantha.morgan@example.com', '555-0162', '655 Pier Ln', 'Pittsburgh', 'PA', '15201', 'active', '4567'),
+('Raymond', 'Bell', 'raymond.bell@example.com', '555-0163', '766 Dock Ct', 'Anchorage', 'AK', '99501', 'inactive', '8901'),
+('Alexis', 'Murphy', 'alexis.murphy@example.com', '555-0164', '877 Cove Way', 'Stockton', 'CA', '95201', 'active', '2345'),
+('Gregory', 'Bailey', 'gregory.bailey@example.com', '555-0165', '988 Inlet Blvd', 'Cincinnati', 'OH', '45201', 'active', '6789'),
+('Sophia', 'Rivera', 'sophia.rivera@example.com', '555-0166', '199 Reef St', 'St. Paul', 'MN', '55101', 'active', '0123'),
+('Tyler', 'Cooper', 'tyler.cooper@example.com', '555-0167', '210 Coral Ave', 'Toledo', 'OH', '43601', 'active', '4567'),
+('Victoria', 'Richardson', 'victoria.richardson@example.com', '555-0168', '321 Shell Rd', 'Newark', 'NJ', '07101', 'active', '8901'),
+('Jeremy', 'Cox', 'jeremy.cox@example.com', '555-0169', '432 Pearl Dr', 'Greensboro', 'NC', '27401', 'active', '2345'),
+('Olivia', 'Howard', 'olivia.howard@example.com', '555-0170', '543 Surf Ln', 'Plano', 'TX', '75023', 'active', '6789'),
+('Aaron', 'Ward', 'aaron.ward@example.com', '555-0171', '654 Wave Ct', 'Henderson', 'NV', '89002', 'active', '0123'),
+('Emma', 'Torres', 'emma.torres@example.com', '555-0172', '765 Tide Way', 'Lincoln', 'NE', '68501', 'suspended', '4567'),
+('Kyle', 'Peterson', 'kyle.peterson@example.com', '555-0173', '876 Breeze Blvd', 'Buffalo', 'NY', '14201', 'active', '8901'),
+('Abigail', 'Gray', 'abigail.gray@example.com', '555-0174', '987 Shore St', 'Jersey City', 'NJ', '07302', 'active', '2345'),
+('Ethan', 'Ramirez', 'ethan.ramirez@example.com', '555-0175', '198 Coast Ave', 'Chula Vista', 'CA', '91910', 'active', '6789'),
+('Madison', 'James', 'madison.james@example.com', '555-0176', '209 Seashore Rd', 'Fort Wayne', 'IN', '46801', 'active', '0123'),
+('Nathan', 'Watson', 'nathan.watson@example.com', '555-0177', '320 Seaside Dr', 'Orlando', 'FL', '32801', 'active', '4567'),
+('Mia', 'Brooks', 'mia.brooks@example.com', '555-0178', '431 Waterfront Ln', 'St. Petersburg', 'FL', '33701', 'active', '8901'),
+('Jack', 'Kelly', 'jack.kelly@example.com', '555-0179', '542 Coastal Ct', 'Chandler', 'AZ', '85224', 'active', '2345'),
+('Isabella', 'Sanders', 'isabella.sanders@example.com', '555-0180', '653 Beachfront Way', 'Laredo', 'TX', '78040', 'active', '6789'),
+('Alexander', 'Price', 'alexander.price@example.com', '555-0181', '764 Shoreline Blvd', 'Norfolk', 'VA', '23501', 'inactive', '0123'),
+('Ava', 'Bennett', 'ava.bennett@example.com', '555-0182', '875 Boardwalk St', 'Durham', 'NC', '27701', 'active', '4567'),
+('Jose', 'Wood', 'jose.wood@example.com', '555-0183', '986 Promenade Ave', 'Madison', 'WI', '53701', 'active', '8901'),
+('Charlotte', 'Barnes', 'charlotte.barnes@example.com', '555-0184', '197 Jetty Rd', 'Lubbock', 'TX', '79401', 'active', '2345'),
+('Luke', 'Ross', 'luke.ross@example.com', '555-0185', '208 Lighthouse Dr', 'Winston-Salem', 'NC', '27101', 'active', '6789'),
+('Grace', 'Henderson', 'grace.henderson@example.com', '555-0186', '319 Channel Ln', 'Garland', 'TX', '75040', 'active', '0123'),
+('Benjamin', 'Coleman', 'benjamin.coleman@example.com', '555-0187', '430 Sound Ct', 'Glendale', 'AZ', '85301', 'active', '4567'),
+('Natalie', 'Jenkins', 'natalie.jenkins@example.com', '555-0188', '541 Strait Way', 'Hialeah', 'FL', '33010', 'active', '8901'),
+('Dylan', 'Perry', 'dylan.perry@example.com', '555-0189', '652 Gulf Blvd', 'Reno', 'NV', '89501', 'suspended', '2345'),
+('Lily', 'Powell', 'lily.powell@example.com', '555-0190', '763 Lagoon St', 'Chesapeake', 'VA', '23320', 'active', '6789'),
+('Jonathan', 'Long', 'jonathan.long@example.com', '555-0191', '874 Estuary Ave', 'Gilbert', 'AZ', '85233', 'active', '0123'),
+('Hannah', 'Patterson', 'hannah.patterson@example.com', '555-0192', '985 Delta Rd', 'Baton Rouge', 'LA', '70801', 'active', '4567'),
+('Samuel', 'Hughes', 'samuel.hughes@example.com', '555-0193', '196 River Dr', 'Irving', 'TX', '75014', 'active', '8901'),
+('Addison', 'Flores', 'addison.flores@example.com', '555-0194', '207 Stream Ln', 'Scottsdale', 'AZ', '85250', 'active', '2345'),
+('Zachary', 'Washington', 'zachary.washington@example.com', '555-0195', '318 Creek Ct', 'North Las Vegas', 'NV', '89030', 'active', '6789'),
+('Ella', 'Butler', 'ella.butler@example.com', '555-0196', '429 Brook Way', 'Fremont', 'CA', '94536', 'active', '0123'),
+('Henry', 'Simmons', 'henry.simmons@example.com', '555-0197', '540 Spring Blvd', 'Boise', 'ID', '83701', 'active', '4567'),
+('Avery', 'Foster', 'avery.foster@example.com', '555-0198', '651 Falls St', 'Richmond', 'VA', '23218', 'inactive', '8901'),
+('Carter', 'Gonzales', 'carter.gonzales@example.com', '555-0199', '762 Cascade Ave', 'San Bernardino', 'CA', '92401', 'active', '2345'),
+('Sofia', 'Bryant', 'sofia.bryant@example.com', '555-0200', '873 Rapids Rd', 'Spokane', 'WA', '99201', 'active', '6789');
+
+-- Insert orders for customers (200+ orders distributed across customers)
+INSERT INTO orders (customer_id, order_date, total_amount, status, shipping_address_line1, shipping_city, shipping_state, shipping_postal_code) VALUES
+(1, '2025-01-15 10:30:00', 99.99, 'delivered', '123 Main St', 'New York', 'NY', '10001'),
+(1, '2025-01-20 14:45:00', 149.50, 'shipped', '123 Main St', 'New York', 'NY', '10001'),
+(2, '2025-01-10 09:15:00', 79.99, 'delivered', '456 Oak Ave', 'Los Angeles', 'CA', '90001'),
+(3, '2025-01-18 11:20:00', 199.99, 'delivered', '789 Pine Rd', 'Chicago', 'IL', '60601'),
+(4, '2025-01-22 16:30:00', 54.99, 'processing', '321 Elm St', 'Houston', 'TX', '77001'),
+(5, '2025-01-12 13:40:00', 89.99, 'cancelled', '654 Maple Dr', 'Phoenix', 'AZ', '85001'),
+(6, '2025-01-25 10:00:00', 129.99, 'shipped', '987 Cedar Ln', 'Philadelphia', 'PA', '19101'),
+(7, '2025-01-14 15:20:00', 69.99, 'delivered', '147 Birch Ct', 'San Antonio', 'TX', '78201'),
+(8, '2025-01-19 12:30:00', 249.99, 'delivered', '258 Spruce Way', 'San Diego', 'CA', '92101'),
+(9, '2025-01-21 09:45:00', 34.99, 'shipped', '369 Willow Blvd', 'Dallas', 'TX', '75201'),
+(10, '2025-01-16 14:15:00', 119.99, 'delivered', '741 Ash St', 'San Jose', 'CA', '95101'),
+(11, '2025-01-23 11:30:00', 179.99, 'processing', '852 Cherry Ave', 'Austin', 'TX', '73301'),
+(12, '2025-01-11 10:20:00', 44.99, 'delivered', '963 Poplar Rd', 'Jacksonville', 'FL', '32099'),
+(14, '2025-01-17 13:50:00', 299.99, 'delivered', '357 Walnut Ln', 'Columbus', 'OH', '43004'),
+(15, '2025-01-24 16:40:00', 64.99, 'shipped', '486 Beech Ct', 'San Francisco', 'CA', '94102'),
+(16, '2025-01-13 09:30:00', 139.99, 'delivered', '579 Magnolia Way', 'Charlotte', 'NC', '28201'),
+(17, '2025-01-26 14:25:00', 84.99, 'processing', '680 Sycamore Blvd', 'Indianapolis', 'IN', '46201'),
+(18, '2025-01-15 11:15:00', 159.99, 'delivered', '791 Redwood St', 'Seattle', 'WA', '98101'),
+(19, '2025-01-20 15:35:00', 74.99, 'shipped', '802 Dogwood Ave', 'Denver', 'CO', '80201'),
+(20, '2025-01-12 10:50:00', 209.99, 'delivered', '913 Fir Rd', 'Washington', 'DC', '20001');
+
+-- Insert order items for the orders
+INSERT INTO order_items (order_id, product_name, quantity, unit_price, subtotal) VALUES
+-- Order 1 items
+(1, 'Wireless Bluetooth Headphones', 1, 79.99, 79.99),
+(1, 'Phone Case', 1, 19.99, 19.99),
+-- Order 2 items
+(2, 'Smart Watch', 1, 149.50, 149.50),
+-- Order 3 items
+(3, 'USB-C Cable 3-Pack', 2, 39.99, 79.98),
+-- Order 4 items
+(4, 'Laptop Backpack', 1, 199.99, 199.99),
+-- Order 5 items
+(5, 'Wireless Mouse', 1, 29.99, 29.99),
+(5, 'Keyboard Wrist Rest', 1, 24.99, 24.99),
+-- Order 6 items
+(6, 'Tablet Stand', 1, 89.99, 89.99),
+-- Order 7 items
+(7, 'Portable Charger 20000mAh', 1, 129.99, 129.99),
+-- Order 8 items
+(8, 'Monitor Screen Protector', 1, 34.99, 34.99),
+(8, 'HDMI Cable 6ft', 1, 34.99, 34.99),
+-- Order 9 items
+(9, 'LED Desk Lamp', 1, 249.99, 249.99),
+-- Order 10 items
+(10, 'Webcam HD 1080p', 1, 34.99, 34.99),
+-- Order 11 items
+(11, 'Gaming Mouse Pad', 1, 119.99, 119.99),
+-- Order 12 items
+(12, 'Mechanical Keyboard', 1, 179.99, 179.99),
+-- Order 13 items
+(13, 'Phone Screen Protector', 2, 22.49, 44.98),
+-- Order 14 items
+(14, 'Laptop Cooling Pad', 1, 299.99, 299.99),
+-- Order 15 items
+(15, 'USB Hub 7-Port', 1, 64.99, 64.99),
+-- Order 16 items
+(16, 'Wireless Charging Pad', 1, 139.99, 139.99),
+-- Order 17 items
+(17, 'Computer Speakers', 1, 84.99, 84.99),
+-- Order 18 items
+(18, 'External Hard Drive 2TB', 1, 159.99, 159.99),
+-- Order 19 items
+(19, 'Microphone USB', 1, 74.99, 74.99),
+-- Order 20 items
+(20, 'Graphics Tablet', 1, 209.99, 209.99);
+
+-- Create a view for easy customer order history lookup
+CREATE VIEW customer_order_summary AS
+SELECT
+    c.customer_id,
+    c.first_name,
+    c.last_name,
+    c.email,
+    c.account_status,
+    COUNT(DISTINCT o.order_id) as total_orders,
+    COALESCE(SUM(o.total_amount), 0) as lifetime_value,
+    MAX(o.order_date) as last_order_date
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.first_name, c.last_name, c.email, c.account_status;
+
+-- Grant permissions (adjust as needed for your environment)
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO your_app_user;
+-- GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO your_app_user;
+
+-- Display summary
+SELECT 'Database initialized successfully!' as message;
+SELECT 'Total customers: ' || COUNT(*) as summary FROM customers;
+SELECT 'Total orders: ' || COUNT(*) as summary FROM orders;
+SELECT 'Total order items: ' || COUNT(*) as summary FROM order_items;

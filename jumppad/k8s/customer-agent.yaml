@@ -2,50 +2,53 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: exfil-server
+  name: customer-agent
   namespace: agents
   labels:
-    app: exfil-server
+    app: customer-agent
 spec:
   type: ClusterIP
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 8124
+    targetPort: 8124
     protocol: TCP
     name: http
   selector:
-    app: exfil-server
+    app: customer-agent
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: exfil-server
+  name: customer-agent
   namespace: agents
   labels:
-    app: exfil-server
+    app: customer-agent
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: exfil-server
+      app: customer-agent
   template:
     metadata:
       labels:
-        app: exfil-server
+        app: customer-agent
     spec:
-      hostNetwork: true
       containers:
-      - name: exfil-server
-        image: ghcr.io/nicholasjackson/exfil-server:0.0.1
+      - name: customer-agent
+        image: ghcr.io/nicholasjackson/customer-agent:0.0.1
         ports:
-        - containerPort: 8080
+        - containerPort: 8124
           name: http
         env:
         - name: HOST
           value: "0.0.0.0"
         - name: PORT
-          value: "8080"
+          value: "8124"
+        - name: OLLAMA_HOST
+          value: "http://172.23.0.1:11434"
+        - name: CUSTOMER_MCP_URI
+          value: "http://customer-tool.agents.svc.cluster.local:8001/mcp"
         resources:
           requests:
             memory: "256Mi"
