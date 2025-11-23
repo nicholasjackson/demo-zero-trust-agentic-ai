@@ -34,6 +34,7 @@ spec:
       labels:
         app: exfil-server
     spec:
+      hostNetwork: true
       containers:
       - name: exfil-server
         image: ghcr.io/nicholasjackson/exfil-server:0.0.1
