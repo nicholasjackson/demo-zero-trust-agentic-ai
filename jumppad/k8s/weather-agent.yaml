@@ -46,7 +46,10 @@ spec:
         - name: PORT
           value: "8123"
         - name: OLLAMA_HOST
-          value: "http://172.23.0.1:11434"
+          valueFrom:
+            secretKeyRef:
+              name: ollama-host-secrets
+              key: ollama-host
         - name: WEATHER_MCP_URI
           value: "http://weather-tool.agents.svc.cluster.local:8000/mcp"
         - name: REDIS_URI

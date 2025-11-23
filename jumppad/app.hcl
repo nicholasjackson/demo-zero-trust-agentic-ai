@@ -23,6 +23,18 @@ resource "template" "weather_tool_secret" {
   }
 }
 
+resource "template" "ollama_host_secret" {
+  disabled   = !variable.install_app
+  depends_on = ["resource.k8s_config.base_setup"]
+
+  source      = file("./k8s/templates/ollama-ui-secret.tmpl")
+  destination = "${data("k8s")}/ollama-ui-secret.yaml"
+
+  variables = {
+    ollama_host = env("OLLAMA_HOST")
+  }
+}
+
 resource "k8s_config" "exfil-server" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
@@ -36,7 +48,7 @@ resource "k8s_config" "exfil-server" {
   wait_until_ready = true
 }
 
-resource "k8s_config" "weather_setup" {
+resource "k8s_config" "app_setup" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
 
@@ -44,6 +56,7 @@ resource "k8s_config" "weather_setup" {
 
   paths = [
     resource.template.weather_tool_secret.destination,
+    resource.template.ollama_host_secret.destination,
     "./k8s/weather-agent.yaml",
     "./k8s/weather-tool.yaml",
     "./k8s/customer-agent.yaml",

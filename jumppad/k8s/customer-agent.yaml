@@ -46,7 +46,10 @@ spec:
         - name: PORT
           value: "8124"
         - name: OLLAMA_HOST
-          value: "http://172.23.0.1:11434"
+          valueFrom:
+            secretKeyRef:
+              name: ollama-host-secrets
+              key: ollama-host
         - name: CUSTOMER_MCP_URI
           value: "http://customer-tool.agents.svc.cluster.local:8001/mcp"
         resources:
