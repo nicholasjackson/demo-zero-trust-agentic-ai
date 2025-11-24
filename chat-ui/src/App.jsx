@@ -13,8 +13,8 @@ function App() {
         <header className="flex-shrink-0 py-4 px-6 border-b border-slate-800/50 backdrop-blur-sm">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <h1 className="text-xl font-semibold text-slate-50">Agent Chat</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Powered by LangGraph</p>
+              <h1 className="text-xl font-semibold text-slate-50">Zero Trust Agentic Security</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Powered by Vault</p>
             </div>
 
             {/* Tool Calls Toggle */}

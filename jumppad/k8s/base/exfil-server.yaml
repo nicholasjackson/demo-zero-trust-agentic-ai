@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: exfil-server
-  namespace: agents
+  namespace: exfil-server
   labels:
     app: exfil-server
 spec:
@@ -21,7 +21,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: exfil-server
-  namespace: agents
+  namespace: exfil-server
   labels:
     app: exfil-server
 spec:

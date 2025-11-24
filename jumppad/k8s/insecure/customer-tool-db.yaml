@@ -2,8 +2,34 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: customer-tool-db-hba
+  namespace: customer-agent
+data:
+  pg_hba.conf: |
+    # PostgreSQL Host-Based Authentication Configuration
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+    # "local" is for Unix domain socket connections only
+    local   all             all                                     md5
+
+    # IPv4 local connections:
+    host    all             all             127.0.0.1/32            md5
+
+    # IPv4 connections from any host (Kubernetes cluster)
+    host    all             all             0.0.0.0/0               md5
+
+    # IPv6 local connections:
+    host    all             all             ::1/128                 md5
+
+    # IPv6 connections from any host
+    host    all             all             ::/0                    md5
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: customer-tool-db-schema
-  namespace: agents
+  namespace: customer-agent
 data:
   init-schema.sql: |
     -- Customer Database Schema
@@ -270,14 +296,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: customer-tool-db
-  namespace: agents
+  namespace: customer-agent
   labels:
     app: customer-tool-db
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
   - port: 5432
     targetPort: 5432
+    nodePort: 30432
     protocol: TCP
     name: postgres
   selector:
@@ -288,7 +315,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: customer-tool-db
-  namespace: agents
+  namespace: customer-agent
   labels:
     app: customer-tool-db
 spec:
@@ -316,6 +343,19 @@ spec:
           value: "password"
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata
+        command:
+        - sh
+        - -c
+        - |
+          # Copy pg_hba.conf for MD5 authentication
+          cp /etc/postgresql/pg_hba.conf /var/lib/postgresql/data/pg_hba.conf
+          chmod 600 /var/lib/postgresql/data/pg_hba.conf
+          chown postgres:postgres /var/lib/postgresql/data/pg_hba.conf
+
+          # Start PostgreSQL with MD5 authentication
+          exec docker-entrypoint.sh postgres \
+            -c password_encryption=md5 \
+            -c hba_file=/var/lib/postgresql/data/pg_hba.conf
         resources:
           requests:
             memory: "256Mi"
@@ -328,6 +368,9 @@ spec:
           mountPath: /var/lib/postgresql/data
         - name: init-scripts
           mountPath: /docker-entrypoint-initdb.d
+        - name: pg-hba-config
+          mountPath: /etc/postgresql
+          readOnly: true
         readinessProbe:
           exec:
             command:
@@ -350,3 +393,7 @@ spec:
       - name: init-scripts
         configMap:
           name: customer-tool-db-schema
+      - name: pg-hba-config
+        configMap:
+          name: customer-tool-db-hba
+          defaultMode: 0600

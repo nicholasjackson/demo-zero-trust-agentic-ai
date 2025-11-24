@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: weather-agent
-  namespace: agents
+  namespace: weather-agent
   labels:
     app: weather-agent
 spec:
@@ -21,7 +21,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: weather-agent
-  namespace: agents
+  namespace: weather-agent
   labels:
     app: weather-agent
 spec:
@@ -51,11 +51,7 @@ spec:
               name: ollama-host-secrets
               key: ollama-host
         - name: WEATHER_MCP_URI
-          value: "http://weather-tool.agents.svc.cluster.local:8000/mcp"
-        - name: REDIS_URI
-          value: "redis://redis.agents.svc.cluster.local:6379"
-        - name: POSTGRES_URI
-          value: "postgresql://langgraph:langgraph@postgresql.agents.svc.cluster.local:5432/langgraph"
+          value: "http://weather-tool.weather-agent.svc.cluster.local:8000/mcp"
         resources:
           requests:
             memory: "256Mi"

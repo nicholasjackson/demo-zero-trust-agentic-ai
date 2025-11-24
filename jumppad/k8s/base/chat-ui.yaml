@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: chat-ui-config
-  namespace: agents
+  namespace: chat-ui
 data:
   config.js: |
     window.AGENT_CONFIG = {
@@ -29,9 +29,13 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: chat-ui-nginx-config
-  namespace: agents
+  namespace: chat-ui
 data:
   default.conf: |
+    # DNS resolver for Kubernetes - allows runtime DNS resolution
+    # Uses cluster DNS service for dynamic service discovery
+    resolver kube-dns.kube-system.svc.cluster.local valid=10s;
+
     server {
         listen 80;
         server_name _;
@@ -43,23 +47,30 @@ data:
             try_files $uri $uri/ /index.html;
         }
 
-        # Proxy API requests to agent services
-        location /api/weather/ {
-            proxy_pass http://weather-agent.agents.svc.cluster.local:8123/;
+        # Proxy API requests to agent services in separate namespaces
+        # Using variables for dynamic DNS resolution at runtime
+        location ~ ^/api/weather/(.*)$ {
+            set $weather_backend "weather-agent.weather-agent.svc.cluster.local:8123";
+            proxy_pass http://$weather_backend/$1$is_args$args;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+            proxy_buffering off;
         }
 
-        location /api/customer/ {
-            proxy_pass http://customer-agent.agents.svc.cluster.local:8124/;
+        location ~ ^/api/customer/(.*)$ {
+            set $customer_backend "customer-agent.customer-agent.svc.cluster.local:8124";
+            proxy_pass http://$customer_backend/$1$is_args$args;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Connection "";
+            proxy_buffering off;
         }
 
         # Security headers
@@ -78,7 +89,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: chat-ui
-  namespace: agents
+  namespace: chat-ui
 spec:
   replicas: 1
   selector:
@@ -91,7 +102,7 @@ spec:
     spec:
       containers:
       - name: chat-ui
-        image: ghcr.io/nicholasjackson/chat-ui:0.0.1
+        image: ghcr.io/nicholasjackson/chat-ui:0.0.2
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
@@ -135,7 +146,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: chat-ui
-  namespace: agents
+  namespace: chat-ui
 spec:
   selector:
     app: chat-ui

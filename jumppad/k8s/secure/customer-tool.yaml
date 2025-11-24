@@ -3,7 +3,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: customer-tool
-  namespace: agents
+  namespace: customer-agent
   labels:
     app: customer-tool
 spec:
@@ -21,7 +21,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: customer-tool
-  namespace: agents
+  namespace: customer-agent
   labels:
     app: customer-tool
 spec:
@@ -48,15 +48,21 @@ spec:
         - name: USE_HTTPS
           value: "false"
         - name: DB_HOST
-          value: "customer-tool-db.agents.svc.cluster.local"
+          value: "customer-tool-db.customer-agent.svc.cluster.local"
         - name: DB_PORT
           value: "5432"
         - name: DB_NAME
           value: "customers"
         - name: DB_USER
-          value: "admin"
+          valueFrom:
+            secretKeyRef:
+              name: customer-db-creds
+              key: username
         - name: DB_PASSWORD
-          value: "password"
+          valueFrom:
+            secretKeyRef:
+              name: customer-db-creds
+              key: password
         resources:
           requests:
             memory: "128Mi"

@@ -1,0 +1,36 @@
+---
+# Weather Agent Namespace - Isolated environment for weather service
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: weather-agent
+  labels:
+    name: weather-agent
+    app: weather-agent
+---
+# Customer Agent Namespace - Isolated environment for customer service
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: customer-agent
+  labels:
+    name: customer-agent
+    app: customer-agent
+---
+# Chat UI Namespace - Isolated environment for user interface
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chat-ui
+  labels:
+    name: chat-ui
+    app: chat-ui
+---
+# Exfil Server Namespace - Isolated environment for attack simulation
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: exfil-server
+  labels:
+    name: exfil-server
+    app: exfil-server

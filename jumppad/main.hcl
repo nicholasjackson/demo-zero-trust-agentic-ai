@@ -26,7 +26,7 @@ variable "install_app" {
 }
 
 variable "enable_keycloak" {
-  default = false
+  default = true
 }
 
 variable "db_user" {
@@ -47,6 +47,10 @@ variable "db_name" {
 # Create an isolated network for the demo
 resource "network" "demo" {
   subnet = "10.16.0.0/16"
+}
+
+output "KUBECONFIG" {
+  value = resource.k8s_cluster.demo.kube_config.path
 }
 
 output "PLUGIN_VERSION" {
@@ -94,5 +98,10 @@ output "DB_NAME" {
 }
 
 output "DB_PORT" {
-  value = resource.ingress.customer_database.port
+  value = 30432
+}
+
+# Address of the vault server which can be used from kubernetes
+output "K8S_VAULT_ADDR" {
+  value = "${docker_ip()}:8200"
 }

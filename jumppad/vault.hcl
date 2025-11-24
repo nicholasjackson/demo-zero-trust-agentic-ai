@@ -75,3 +75,22 @@ resource "exec" "configure_vault" {
     KEYCLOAK_URL = "http://localhost:8080"
   }
 }
+
+# Configure Vault database secrets engine for customer database
+# This configures dynamic database credentials for the customer-agent
+resource "exec" "configure_vault_database" {
+  disabled = !variable.install_app
+
+  depends_on = [
+    "resource.container.vault",
+    "resource.k8s_config.app_setup"
+  ]
+
+  script = file("./scripts/setup-vault-app.sh")
+
+  environment = {
+    VAULT_ADDR  = "http://localhost:8200"
+    VAULT_TOKEN = "root"
+    KUBECONFIG  = resource.k8s_cluster.demo.kube_config.path
+  }
+}

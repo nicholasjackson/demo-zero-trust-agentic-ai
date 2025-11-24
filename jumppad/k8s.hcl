@@ -11,6 +11,12 @@ resource "k8s_cluster" "demo" {
     id = resource.network.demo.meta.id
   }
 
+  # Expose the db node port service
+  port {
+    local = 30432
+    host  = 30432
+  }
+
   depends_on = ["resource.container.vault"]
 }
 
@@ -50,28 +56,4 @@ resource "exec" "configure_k8s_auth" {
     VAULT_ADDR  = "http://localhost:8200"
     VAULT_TOKEN = "root"
   }
-}
-
-# Apply the VaultAuth and VaultStaticSecret resources
-resource "k8s_config" "vault_auth" {
-  disabled = !variable.run_scripts
-
-  depends_on = ["resource.exec.configure_k8s_auth"]
-
-  cluster = resource.k8s_cluster.demo
-
-  paths = [
-    "./vso/auth.yaml"
-  ]
-
-  wait_until_ready = true
-}
-
-# Output Kubernetes configuration
-output "KUBECONFIG" {
-  value = resource.k8s_cluster.demo.kube_config.path
-}
-
-output "K8S_VAULT_ADDR" {
-  value = "Vault accessible from K8s at: http://10.10.0.30:8200"
 }

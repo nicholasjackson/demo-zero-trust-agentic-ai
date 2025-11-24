@@ -5,7 +5,7 @@ resource "k8s_config" "base_setup" {
   cluster = resource.k8s_cluster.demo
 
   paths = [
-    "./k8s/namespace.yaml",
+    "./k8s/base/namespace.yaml",
   ]
 
   wait_until_ready = true
@@ -15,7 +15,7 @@ resource "template" "weather_tool_secret" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
 
-  source      = file("./k8s/templates/weather-tool-secret.tmpl")
+  source      = file("./k8s/base/templates/weather-tool-secret.tmpl")
   destination = "${data("k8s")}/weather-tool-secret.yaml"
 
   variables = {
@@ -27,7 +27,7 @@ resource "template" "ollama_host_secret" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
 
-  source      = file("./k8s/templates/ollama-ui-secret.tmpl")
+  source      = file("./k8s/base/templates/ollama-ui-secret.tmpl")
   destination = "${data("k8s")}/ollama-ui-secret.yaml"
 
   variables = {
@@ -35,14 +35,15 @@ resource "template" "ollama_host_secret" {
   }
 }
 
-resource "k8s_config" "exfil-server" {
+resource "k8s_config" "base-server" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
 
   cluster = resource.k8s_cluster.demo
 
   paths = [
-    "./k8s/exfil-server.yaml",
+    "./k8s/base/exfil-server.yaml",
+    "./k8s/base/chat-ui.yaml",
   ]
 
   wait_until_ready = true
@@ -57,12 +58,11 @@ resource "k8s_config" "app_setup" {
   paths = [
     resource.template.weather_tool_secret.destination,
     resource.template.ollama_host_secret.destination,
-    "./k8s/weather-agent.yaml",
-    "./k8s/weather-tool.yaml",
-    "./k8s/customer-agent.yaml",
-    "./k8s/customer-tool.yaml",
-    "./k8s/customer-tool-db.yaml",
-    "./k8s/chat-ui.yaml",
+    "./k8s/insecure/weather-agent.yaml",
+    "./k8s/insecure/weather-tool.yaml",
+    "./k8s/insecure/customer-agent.yaml",
+    "./k8s/insecure/customer-tool.yaml",
+    "./k8s/insecure/customer-tool-db.yaml",
   ]
 
   wait_until_ready = true
@@ -77,7 +77,7 @@ resource "ingress" "weather_agent" {
 
     config = {
       service   = "weather-agent"
-      namespace = "agents"
+      namespace = "weather-agent"
     }
   }
 }
@@ -91,7 +91,7 @@ resource "ingress" "customer_agent" {
 
     config = {
       service   = "customer-agent"
-      namespace = "agents"
+      namespace = "customer-agent"
     }
   }
 }
@@ -105,21 +105,7 @@ resource "ingress" "exfil_server" {
 
     config = {
       service   = "exfil-server"
-      namespace = "agents"
-    }
-  }
-}
-
-resource "ingress" "customer_database" {
-  port = 15432
-
-  target {
-    resource = resource.k8s_cluster.demo
-    port     = 5432
-
-    config = {
-      service   = "customer-tool-db"
-      namespace = "agents"
+      namespace = "exfil-server"
     }
   }
 }
@@ -133,7 +119,7 @@ resource "ingress" "chat_ui" {
 
     config = {
       service   = "chat-ui"
-      namespace = "agents"
+      namespace = "chat-ui"
     }
   }
 }
