@@ -49,16 +49,20 @@ curl -sf -X POST "${KEYCLOAK_URL}/admin/realms/demo/clients" \
   -d '{
     "clientId": "demo-app",
     "enabled": true,
-    "publicClient": false,
+    "publicClient": true,
     "directAccessGrantsEnabled": true,
     "serviceAccountsEnabled": false,
     "standardFlowEnabled": true,
     "implicitFlowEnabled": false,
     "protocol": "openid-connect",
     "attributes": {
-      "access.token.lifespan": "3600"
+      "access.token.lifespan": "3600",
+      "pkce.code.challenge.method": "S256"
     },
-    "redirectUris": ["http://localhost:*"],
+    "redirectUris": [
+      "http://localhost:5173/*",
+      "http://localhost:*"
+    ],
     "webOrigins": ["http://localhost:*"]
   }' || echo "Client might already exist"
 

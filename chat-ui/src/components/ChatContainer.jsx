@@ -3,7 +3,7 @@ import MessageList from './MessageList'
 import MessageInput from './MessageInput'
 import { sendMessageToAgent } from '../services/agentApi'
 
-export default function ChatContainer({ selectedAgent, showToolCalls }) {
+export default function ChatContainer({ selectedAgent, showToolCalls, accessToken }) {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef(null)
@@ -26,8 +26,8 @@ export default function ChatContainer({ selectedAgent, showToolCalls }) {
     setIsLoading(true)
 
     try {
-      // Call agent API through service
-      const allMessages = await sendMessageToAgent(selectedAgent, content)
+      // Call agent API through service, passing access token if available
+      const allMessages = await sendMessageToAgent(selectedAgent, content, accessToken)
 
       // Add all messages with proper types and timestamps
       const processedMessages = allMessages
