@@ -5,7 +5,6 @@ import './index.css'
 import App from './App.jsx'
 
 // Keycloak OIDC configuration for demo realm
-// Use environment variable for authority URL, fallback to localhost for dev
 const oidcConfig = {
   authority: import.meta.env.VITE_KEYCLOAK_AUTHORITY || 'http://localhost:8080/realms/demo',
   client_id: import.meta.env.VITE_KEYCLOAK_CLIENT_ID || 'demo-app',
