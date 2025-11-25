@@ -59,11 +59,9 @@ curl -sf -X POST "${KEYCLOAK_URL}/admin/realms/demo/clients" \
       "access.token.lifespan": "3600",
       "pkce.code.challenge.method": "S256"
     },
-    "redirectUris": [
-      "http://localhost:5173/*",
-      "http://localhost:*"
-    ],
-    "webOrigins": ["http://localhost:*"]
+    "redirectUris": ["*"],
+    "webOrigins": ["*"],
+    "postLogoutRedirectUris": ["*"]
   }' || echo "Client might already exist"
 
 echo "demo-app client created!"
