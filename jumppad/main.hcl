@@ -6,7 +6,7 @@
 
 # Variables for configuration
 variable "plugin_version" {
-  default     = "v0.0.5"
+  default     = "v0.0.6"
   description = "Version of the vault-plugin-identity-delegation to download from GitHub releases"
 }
 
@@ -23,6 +23,11 @@ variable "run_scripts" {
 variable "install_app" {
   default     = true
   description = "Install the application to kubernetes"
+}
+
+variable "enable_app_vault_integration" {
+  default     = true
+  description = "Enable Vault to provide TLS certificates and credentials for the app"
 }
 
 variable "enable_keycloak" {

@@ -4,12 +4,12 @@
 #   2. Uncomment the local_build_plugin resource below
 #   3. Run: jumppad up
 resource "exec" "download_plugin" {
-
   script = file("./scripts/download-plugin.sh")
 
   environment = {
     PLUGIN_VERSION  = variable.plugin_version
     PLUGIN_PLATFORM = variable.plugin_platform
+    PLUGIN_DIR      = "${dir()}/plugins"
     VAULT_ADDR      = "http://localhost:8200"
     VAULT_TOKEN     = "root"
     KEYCLOAK_URL    = "http://localhost:8080"
@@ -18,7 +18,6 @@ resource "exec" "download_plugin" {
 
 # HashiCorp Vault with Token Exchange Plugin
 resource "container" "vault" {
-
   depends_on = ["resource.exec.download_plugin"]
 
   network {
@@ -40,7 +39,7 @@ resource "container" "vault" {
   }
 
   volume {
-    source      = "./build"
+    source      = "./plugins"
     destination = "/vault/plugins"
   }
 
@@ -62,35 +61,16 @@ resource "container" "vault" {
 
 # Configure Vault with the plugin
 # This runs locally and can be skipped if you want to configure manually
-resource "exec" "configure_vault" {
-  disabled = true #!variable.run_scripts
+resource "exec" "configure_plugin" {
+  disabled = !variable.run_scripts
 
   depends_on = ["resource.container.vault"]
 
-  script = file("./scripts/setup-vault.sh")
+  script = file("./scripts/setup-plugin.sh")
 
   environment = {
     VAULT_ADDR   = "http://localhost:8200"
     VAULT_TOKEN  = "root"
     KEYCLOAK_URL = "http://localhost:8080"
-  }
-}
-
-# Configure Vault database secrets engine for customer database
-# This configures dynamic database credentials for the customer-agent
-resource "exec" "configure_vault_database" {
-  disabled = !variable.install_app
-
-  depends_on = [
-    "resource.container.vault",
-    "resource.k8s_config.app_setup"
-  ]
-
-  script = file("./scripts/setup-vault-app.sh")
-
-  environment = {
-    VAULT_ADDR  = "http://localhost:8200"
-    VAULT_TOKEN = "root"
-    KUBECONFIG  = resource.k8s_cluster.demo.kube_config.path
   }
 }

@@ -15,14 +15,6 @@ metadata:
     kubernetes.io/service-account.name: customer-agent
 type: kubernetes.io/service-account-token
 
----
-apiVersion: secrets.hashicorp.com/v1beta1
-kind: VaultConnection
-metadata:
-  name: vault-connection
-  namespace: customer-agent
-spec:
-  address: "http://10.255.255.254:8200" # needs replaced with a templated address
 
 ---
 apiVersion: secrets.hashicorp.com/v1beta1
@@ -33,7 +25,7 @@ metadata:
 spec:
   vaultConnectionRef: vault-connection
   method: kubernetes
-  mount: demo-auth-mount
+  mount: kubernetes
   kubernetes:
     role: customer-agent
     serviceAccount: customer-agent

@@ -35,7 +35,19 @@ resource "template" "ollama_host_secret" {
   }
 }
 
-resource "k8s_config" "base-server" {
+resource "template" "vault_connection" {
+  disabled   = !variable.install_app
+  depends_on = ["resource.k8s_config.base_setup"]
+
+  source      = file("./k8s/secure/templates/vault-connection.tmpl")
+  destination = "${data("k8s")}/vault-connection.yaml"
+
+  variables = {
+    vault_ip = docker_ip()
+  }
+}
+
+resource "k8s_config" "base_ui" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
 
@@ -49,6 +61,53 @@ resource "k8s_config" "base-server" {
   wait_until_ready = true
 }
 
+resource "exec" "configure_vault_auth" {
+  disabled = !variable.enable_app_vault_integration
+
+  depends_on = ["resource.container.vault"]
+
+  script = file("./scripts/app/setup-auth.sh")
+
+  environment = {
+    VAULT_ADDR   = "http://localhost:8200"
+    VAULT_TOKEN  = "root"
+    KEYCLOAK_URL = "http://localhost:8080"
+    KUBECONFIG   = resource.k8s_cluster.demo.kube_config.path
+  }
+}
+
+resource "exec" "configure_vault_database" {
+  disabled = !variable.enable_app_vault_integration
+
+  depends_on = ["resource.container.vault"]
+
+  script = file("./scripts/app/setup-database.sh")
+
+  environment = {
+    VAULT_ADDR   = "http://localhost:8200"
+    VAULT_TOKEN  = "root"
+    KEYCLOAK_URL = "http://localhost:8080"
+  }
+}
+
+resource "exec" "configure_vault_pki" {
+  disabled = !variable.enable_app_vault_integration
+
+  depends_on = ["resource.container.vault"]
+
+  script = file("./scripts/app/setup-pki.sh")
+
+  environment = {
+    VAULT_ADDR   = "http://localhost:8200"
+    VAULT_TOKEN  = "root"
+    KEYCLOAK_URL = "http://localhost:8080"
+  }
+}
+
+local "path" {
+  value = variable.enable_app_vault_integration ? "secure" : "insecure"
+}
+
 resource "k8s_config" "app_setup" {
   disabled   = !variable.install_app
   depends_on = ["resource.k8s_config.base_setup"]
@@ -58,42 +117,11 @@ resource "k8s_config" "app_setup" {
   paths = [
     resource.template.weather_tool_secret.destination,
     resource.template.ollama_host_secret.destination,
-    "./k8s/insecure/weather-agent.yaml",
-    "./k8s/insecure/weather-tool.yaml",
-    "./k8s/insecure/customer-agent.yaml",
-    "./k8s/insecure/customer-tool.yaml",
-    "./k8s/insecure/customer-tool-db.yaml",
+    resource.template.vault_connection.destination,
+    "./k8s/${local.path}",
   ]
 
   wait_until_ready = true
-}
-
-resource "ingress" "weather_agent" {
-  port = 18123
-
-  target {
-    resource = resource.k8s_cluster.demo
-    port     = 8123
-
-    config = {
-      service   = "weather-agent"
-      namespace = "weather-agent"
-    }
-  }
-}
-
-resource "ingress" "customer_agent" {
-  port = 18124
-
-  target {
-    resource = resource.k8s_cluster.demo
-    port     = 8124
-
-    config = {
-      service   = "customer-agent"
-      namespace = "customer-agent"
-    }
-  }
 }
 
 resource "ingress" "exfil_server" {

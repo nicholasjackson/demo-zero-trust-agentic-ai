@@ -30,21 +30,6 @@ spec:
     app: my-app
 ```
 
-### Network Isolation
-
-Use Network Policies to control pod-to-pod communication:
-
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: default-deny-ingress
-spec:
-  podSelector: {}
-  policyTypes:
-  - Ingress
-```
-
 ## Resource Management
 
 ### CPU and Memory Requests
@@ -66,21 +51,6 @@ resources:
 - **Guaranteed**: requests == limits (critical workloads)
 - **Burstable**: requests < limits (most applications)
 - **BestEffort**: no requests/limits (batch jobs)
-
-## Security Best Practices
-
-### Pod Security Context
-
-Drop unnecessary capabilities and run as non-root:
-
-```yaml
-securityContext:
-  runAsNonRoot: true
-  runAsUser: 1000
-  capabilities:
-    drop:
-    - ALL
-```
 
 ### Secret Management
 

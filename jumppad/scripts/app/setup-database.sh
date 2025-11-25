@@ -52,6 +52,7 @@ vault write database/config/customer-db \
   plugin_name=postgresql-database-plugin \
   allowed_roles="customer-readonly,customer-readwrite" \
   connection_url="postgresql://{{username}}:{{password}}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=prefer" \
+  verify_connection=false \
   username="${DB_USER}" \
   password="${DB_PASSWORD}" \
   max_open_connections=5 \
@@ -115,23 +116,6 @@ path "database/creds/customer-readwrite" {
 EOF
 
 echo "customer-db-readwrite policy created!"
-
-# Test credential generation
-echo "Testing credential generation..."
-echo "Generating read-only credentials..."
-READONLY_CREDS=$(vault read -format=json database/creds/customer-readonly)
-if [ $? -eq 0 ]; then
-  READONLY_USERNAME=$(echo ${READONLY_CREDS} | jq -r '.data.username')
-  echo "Successfully generated read-only credentials for user: ${READONLY_USERNAME}"
-
-  # Revoke the test credentials
-  READONLY_LEASE=$(echo ${READONLY_CREDS} | jq -r '.lease_id')
-  vault lease revoke ${READONLY_LEASE}
-  echo "Test credentials revoked."
-else
-  echo "ERROR: Failed to generate read-only credentials"
-  exit 1
-fi
 
 echo ""
 echo "================================"

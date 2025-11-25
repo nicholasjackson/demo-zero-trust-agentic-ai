@@ -38,22 +38,3 @@ resource "helm" "vault_operator" {
     pods    = ["app.kubernetes.io/instance=vault-operator"]
   }
 }
-
-# Configure Kubernetes authentication in Vault
-# This creates the necessary service accounts and configures the auth method
-resource "exec" "configure_k8s_auth" {
-  disabled = !variable.run_scripts
-
-  depends_on = [
-    "resource.helm.vault_operator",
-    "resource.container.vault"
-  ]
-
-  script = file("./scripts/setup-k8s-auth.sh")
-
-  environment = {
-    KUBECONFIG  = resource.k8s_cluster.demo.kube_config.path
-    VAULT_ADDR  = "http://localhost:8200"
-    VAULT_TOKEN = "root"
-  }
-}
