@@ -6,13 +6,28 @@ For production use with persistence, you would add:
 - Redis for state management
 - Thread/conversation management
 """
+
 import os
 import traceback
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
 import uvicorn
+from typing import Optional
+
+from pydantic import BaseModel
+
+from conversion import (
+    convert_langchain_to_openai_message,
+    convert_openai_to_langchain_messages,
+)
+
 from agent import agent
+
+
+class AgentRequest(BaseModel):
+    input: dict
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,20 +49,8 @@ async def health():
     return {"status": "ok"}
 
 
-def serialize_message(msg):
-    """Convert LangChain message to dict."""
-    if hasattr(msg, 'dict'):
-        return msg.dict()
-    elif hasattr(msg, 'content'):
-        return {
-            "role": getattr(msg, 'type', 'unknown'),
-            "content": msg.content
-        }
-    return str(msg)
-
-
 @app.post("/invoke")
-async def invoke(request: dict):
+async def invoke(request: AgentRequest, authorization: Optional[str] = Header(None)):
     """Invoke the agent with input.
 
     Request body:
@@ -60,21 +63,33 @@ async def invoke(request: dict):
     try:
         logger.info(f"Received request: {request}")
 
-        # Get the agent
-        logger.info("Creating agent instance...")
-        agent_instance = await agent()
-        logger.info("Agent instance created")
+        # Check if there is a jwt in the authorization header
+        if authorization == None:
+            return JSONResponse(
+                status_code=401, content={"error": "Authorization required"}
+            )
 
-        # Invoke the agent with the input
-        logger.info("Invoking agent...")
-        result = await agent_instance.ainvoke(request.get("input", {}))
-        logger.info("Agent invoked successfully")
+        # Get the agent
+        token = authorization.replace("Bearer ", "")
+        logger.info(f"With token: {token}")
+        agent_instance = await agent(token)
+
+        # Get input and convert messages from OpenAI format to LangChain format
+        input_data = request.input or {"messages": []}
+        if "messages" in input_data:
+            input_data["messages"] = convert_openai_to_langchain_messages(
+                input_data["messages"]
+            )
+
+        result = await agent_instance.ainvoke(input_data)  # type: ignore[arg-type]
 
         # Serialize the result to make it JSON-friendly
         serialized_result = {}
         for key, value in result.items():
             if isinstance(value, list):
-                serialized_result[key] = [serialize_message(item) for item in value]
+                serialized_result[key] = [
+                    convert_langchain_to_openai_message(item) for item in value
+                ]
             else:
                 serialized_result[key] = value
 
@@ -87,8 +102,8 @@ async def invoke(request: dict):
             content={
                 "error": str(e),
                 "type": type(e).__name__,
-                "traceback": traceback.format_exc()
-            }
+                "traceback": traceback.format_exc(),
+            },
         )
 
 
@@ -100,9 +115,4 @@ if __name__ == "__main__":
     # For now, running stateless - each request is independent
     # To add persistence, configure checkpointing in agent.py
 
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        log_level="info"
-    )
+    uvicorn.run(app, host=host, port=port, log_level="info")
