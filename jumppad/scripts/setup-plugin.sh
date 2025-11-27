@@ -13,7 +13,7 @@ done
 echo "Vault is ready!"
 
 CURRENT_DIR=$(dirname "$0")
-PLUGIN_DIR="${CURRENT_DIR}/../build"
+PLUGIN_DIR="${CURRENT_DIR}/../plugins"
 
 # Check if plugin is already enabled
 echo "Checking if identity-delegation plugin is already configured..."

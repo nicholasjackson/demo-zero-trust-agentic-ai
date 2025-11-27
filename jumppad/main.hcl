@@ -6,7 +6,7 @@
 
 # Variables for configuration
 variable "plugin_version" {
-  default     = "v0.0.6"
+  default     = "v0.0.7"
   description = "Version of the vault-plugin-identity-delegation to download from GitHub releases"
 }
 

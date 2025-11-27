@@ -34,6 +34,7 @@ spec:
       labels:
         app: customer-tool
     spec:
+      serviceAccountName: customer-tool
       containers:
       - name: customer-tool
         image: ghcr.io/nicholasjackson/customer-tool:0.0.1

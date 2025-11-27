@@ -328,6 +328,7 @@ spec:
       labels:
         app: customer-tool-db
     spec:
+      serviceAccountName: customer-tool-db
       containers:
       - name: postgres
         image: postgres:16-alpine

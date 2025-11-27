@@ -92,10 +92,10 @@ echo "customer-agent-server role created!"
 echo ""
 echo "Creating PKI policies..."
 
-# Customer Tool Database server certificate policy
-vault policy write customer-tool-db-server-cert - <<EOF
-# Allow issuing customer-tool-db server certificates
-path "pki/issue/customer-tool-db-server" {
+# Customer Agent server certificate policy
+vault policy write customer-agent-server-cert - <<EOF
+# Allow issuing customer-agent server certificates
+path "pki/issue/customer-agent-server" {
   capabilities = ["create", "update"]
 }
 
@@ -109,8 +109,6 @@ path "pki/certs" {
   capabilities = ["list"]
 }
 EOF
-
-echo "customer-tool-db-server-cert policy created!"
 
 # Customer Tool server certificate policy
 vault policy write customer-tool-server-cert - <<EOF
@@ -130,12 +128,10 @@ path "pki/certs" {
 }
 EOF
 
-echo "customer-tool-server-cert policy created!"
-
-# Customer Agent server certificate policy
-vault policy write customer-agent-server-cert - <<EOF
-# Allow issuing customer-agent server certificates
-path "pki/issue/customer-agent-server" {
+# Customer Tool Database server certificate policy
+vault policy write customer-tool-db-server-cert - <<EOF
+# Allow issuing customer-tool-db server certificates
+path "pki/issue/customer-tool-db-server" {
   capabilities = ["create", "update"]
 }
 
@@ -150,7 +146,6 @@ path "pki/certs" {
 }
 EOF
 
-echo "customer-agent-server-cert policy created!"
 
 # ===== TEST CERTIFICATE GENERATION =====
 echo ""
