@@ -22,7 +22,8 @@ from conversion import (
     convert_openai_to_langchain_messages,
 )
 
-from agent import agent
+from config import Config
+from agent import create_agent
 
 
 class AgentRequest(BaseModel):
@@ -34,6 +35,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Weather Agent API")
+
+# Load configuration from environment variables
+config = Config.from_env()
 
 
 @app.get("/")
@@ -59,20 +63,31 @@ async def invoke(request: AgentRequest, authorization: Optional[str] = Header(No
             "messages": [{"role": "user", "content": "What's the weather?"}]
         }
     }
+
+    Headers:
+        Authorization: Bearer <token> (optional)
     """
     try:
         logger.info(f"Received request: {request}")
 
-        # Check if there is a jwt in the authorization header
-        if authorization == None:
+        if authorization:
+            token = (
+                authorization.replace("Bearer ", "")
+                if authorization.startswith("Bearer ")
+                else authorization
+            )
+            logger.info(f"Authorization header present (token length: {len(token)})")
+        else:
+            token = None
+            logger.error("No authorization header provided")
             return JSONResponse(
-                status_code=401, content={"error": "Authorization required"}
+                status_code=403, content={"error": "user is not authenticated"}
             )
 
         # Get the agent
-        token = authorization.replace("Bearer ", "")
-        logger.info(f"With token: {token}")
-        agent_instance = await agent(token)
+        logger.info("Creating agent instance...")
+        agent_instance = await create_agent(config, token)
+        logger.info("Agent instance created")
 
         # Get input and convert messages from OpenAI format to LangChain format
         input_data = request.input or {"messages": []}
@@ -110,9 +125,5 @@ async def invoke(request: AgentRequest, authorization: Optional[str] = Header(No
 if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8123"))
-
-    # Note: Redis and Postgres URIs are available in env vars if needed
-    # For now, running stateless - each request is independent
-    # To add persistence, configure checkpointing in agent.py
 
     uvicorn.run(app, host=host, port=port, log_level="info")

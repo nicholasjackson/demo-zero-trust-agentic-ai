@@ -16,5 +16,6 @@ dependencies = [
     "langchain-ollama>=1.0.0",
     "langgraph>=1.0.2",
     "langgraph-cli[inmem]>=0.4.7",
+    "pyvault-agent>=0.2.0",
     "uvicorn>=0.32.0",
 ]

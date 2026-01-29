@@ -41,69 +41,26 @@ push: ## Build and push Docker image to GitHub Packages
 	docker buildx build --platform $(PLATFORM) --push -t $(TAG) .
 	@echo "Push complete: $(TAG)"
 
-.PHONY: login
-login: ## Login to GitHub Container Registry
-	@echo "Logging in to $(REGISTRY)..."
-	@echo "Make sure GITHUB_TOKEN environment variable is set"
-	@echo $(GITHUB_TOKEN) | docker login $(REGISTRY) -u $(REPO_OWNER) --password-stdin
-
-.PHONY: tag-version
-tag-version: ## Tag image with git commit SHA
-	$(eval GIT_SHA := $(shell git rev-parse --short HEAD))
-	@echo "Tagging $(TAG) as $(FULL_IMAGE):$(GIT_SHA)..."
-	docker tag $(TAG) $(FULL_IMAGE):$(GIT_SHA)
-	@echo "Tagged as: $(FULL_IMAGE):$(GIT_SHA)"
-
-.PHONY: push-version
-push-version: build tag-version ## Build, tag with git SHA, and push both latest and SHA tags
-	@echo "Pushing $(TAG) and SHA-tagged version..."
-	docker push $(TAG)
-	$(eval GIT_SHA := $(shell git rev-parse --short HEAD))
-	docker push $(FULL_IMAGE):$(GIT_SHA)
-	@echo "Pushed: $(TAG)"
-	@echo "Pushed: $(FULL_IMAGE):$(GIT_SHA)"
-
 .PHONY: dev
-dev: ## Run LangGraph agent locally in dev mode
-	@echo "Starting LangGraph dev server..."
-	langgraph dev
+dev: check-env ## Run customer agent locally with uvicorn
+	@echo "Starting customer agent server on port 8124..."
+	cd src && uv run python server.py
 
-.PHONY: up
-up: ## Run LangGraph agent locally in Docker with langgraph up
-	@echo "Starting LangGraph agent server in Docker..."
-	langgraph up
-
-.PHONY: test
-test: build run-test ## Build and run a test container
-
-.PHONY: run-test
-run-test: ## Run the container for testing (detached)
-	@echo "Starting test container..."
-	docker run -d --name customer-agent-test \
-		-p 8124:8124 \
-		-e LANGGRAPH_AUTH_TYPE=noop \
-		-e LANGSMITH_TRACING=false \
-		-e LANGSMITH_API_KEY=dummy-key-for-dev \
-		-e CUSTOMER_MCP_URI=${CUSTOMER_MCP_URI:-http://localhost:8001/mcp} \
-		$(TAG)
-	@echo "Container started. Waiting for service to be ready..."
-	@sleep 3
-	@echo "Test container running at http://localhost:8123"
-	@echo "Run 'make stop-test' to stop and remove the container"
-
-.PHONY: stop-test
-stop-test: ## Stop and remove test container
-	@echo "Stopping test container..."
-	docker stop customer-agent-test || true
-	docker rm customer-agent-test || true
-
-.PHONY: clean
-clean: stop-test ## Clean up local images and containers
-	@echo "Removing local images..."
-	docker rmi $(TAG) || true
-	$(eval GIT_SHA := $(shell git rev-parse --short HEAD))
-	docker rmi $(FULL_IMAGE):$(GIT_SHA) || true
-
+.PHONY: check-env
+check-env: ## Check required environment variables are set
+	@if [ -z "$(OLLAMA_HOST)" ]; then \
+		echo "Error: OLLAMA_HOST environment variable is not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VAULT_ROLE_ID)" ]; then \
+		echo "Error: VAULT_ROLE_ID environment variable is not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VAULT_SECRET_ID)" ]; then \
+		echo "Error: VAULT_SECRET_ID environment variable is not set"; \
+		exit 1; \
+	fi
+	@echo "All required environment variables are set"
 
 .PHONY: info
 info: ## Display image and repository information

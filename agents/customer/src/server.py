@@ -6,19 +6,25 @@ For production use with persistence, you would add:
 - Redis for state management
 - Thread/conversation management
 """
+
 import os
 import traceback
 import logging
-from fastapi import FastAPI
+from typing import Optional
+from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
 import uvicorn
-from agent import agent
+from config import Config
+from agent import create_agent
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Customer Agent API")
+
+# Load configuration from environment variables
+config = Config.from_env()
 
 
 @app.get("/")
@@ -36,18 +42,15 @@ async def health():
 
 def serialize_message(msg):
     """Convert LangChain message to dict."""
-    if hasattr(msg, 'dict'):
-        return msg.dict()
-    elif hasattr(msg, 'content'):
-        return {
-            "role": getattr(msg, 'type', 'unknown'),
-            "content": msg.content
-        }
+    if hasattr(msg, "model_dump"):
+        return msg.model_dump()
+    elif hasattr(msg, "content"):
+        return {"role": getattr(msg, "type", "unknown"), "content": msg.content}
     return str(msg)
 
 
 @app.post("/invoke")
-async def invoke(request: dict):
+async def invoke(request: dict, authorization: Optional[str] = Header(None)):
     """Invoke the agent with input.
 
     Request body:
@@ -56,13 +59,30 @@ async def invoke(request: dict):
             "messages": [{"role": "user", "content": "What's the weather?"}]
         }
     }
+
+    Headers:
+        Authorization: Bearer <token> (optional)
     """
     try:
         logger.info(f"Received request: {request}")
+        if authorization:
+            # Extract token from "Bearer <token>" format
+            token = (
+                authorization.replace("Bearer ", "")
+                if authorization.startswith("Bearer ")
+                else authorization
+            )
+            logger.info(f"Authorization header present (token length: {len(token)})")
+        else:
+            token = None
+            logger.error("No authorization header provided")
+            return JSONResponse(
+                status_code=403, content={"error": "user is not authenticated"}
+            )
 
         # Get the agent
         logger.info("Creating agent instance...")
-        agent_instance = await agent()
+        agent_instance = await create_agent(config, token)
         logger.info("Agent instance created")
 
         # Invoke the agent with the input
@@ -87,8 +107,8 @@ async def invoke(request: dict):
             content={
                 "error": str(e),
                 "type": type(e).__name__,
-                "traceback": traceback.format_exc()
-            }
+                "traceback": traceback.format_exc(),
+            },
         )
 
 
@@ -100,9 +120,4 @@ if __name__ == "__main__":
     # For now, running stateless - each request is independent
     # To add persistence, configure checkpointing in agent.py
 
-    uvicorn.run(
-        app,
-        host=host,
-        port=port,
-        log_level="info"
-    )
+    uvicorn.run(app, host=host, port=port, log_level="info")

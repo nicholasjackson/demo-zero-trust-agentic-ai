@@ -64,9 +64,25 @@ push-version: build tag-version ## Build, tag with git SHA, and push both latest
 	@echo "Pushed: $(FULL_IMAGE):$(GIT_SHA)"
 
 .PHONY: dev
-dev: ## Run LangGraph agent locally in dev mode
-	@echo "Starting LangGraph dev server..."
-	langgraph dev
+dev: check-env ## Run weather agent locally with uvicorn
+	@echo "Starting weather agent server on port 8123..."
+	cd src && uv run python server.py
+
+.PHONY: check-env
+check-env: ## Check required environment variables are set
+	@if [ -z "$(OLLAMA_HOST)" ]; then \
+		echo "Error: OLLAMA_HOST environment variable is not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VAULT_ROLE_ID)" ]; then \
+		echo "Error: VAULT_ROLE_ID environment variable is not set"; \
+		exit 1; \
+	fi
+	@if [ -z "$(VAULT_SECRET_ID)" ]; then \
+		echo "Error: VAULT_SECRET_ID environment variable is not set"; \
+		exit 1; \
+	fi
+	@echo "All required environment variables are set"
 
 .PHONY: up
 up: ## Run LangGraph agent locally in Docker with langgraph up

@@ -63,8 +63,13 @@ push-version: build tag-version ## Build, tag with git SHA, and push both latest
 	@echo "Pushed: $(TAG)"
 	@echo "Pushed: $(FULL_IMAGE):$(GIT_SHA)"
 
+.PHONY: dev
+dev: ## Run the weather tool locally in dev mode (no Docker)
+	@echo "Starting weather tool in dev mode on port 8000..."
+	python weather.py
+
 .PHONY: run
-run: ## Run the weather tool locally
+run: ## Run the weather tool locally in Docker
 	@echo "Running $(TAG) on port 8000..."
 	docker run -p 8000:8000 \
 		-e OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY} \

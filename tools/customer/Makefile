@@ -63,8 +63,13 @@ push-version: build tag-version ## Build, tag with git SHA, and push both latest
 	@echo "Pushed: $(TAG)"
 	@echo "Pushed: $(FULL_IMAGE):$(GIT_SHA)"
 
+.PHONY: dev
+dev: ## Run the customer tool locally in dev mode (no Docker)
+	@echo "Starting customer tool in dev mode on port 8001..."
+	python customer.py
+
 .PHONY: run
-run: ## Run the customer tool locally
+run: ## Run the customer tool locally in Docker
 	@echo "Running $(TAG) on port 8001..."
 	docker run -p 8001:8001 \
 		$(TAG)

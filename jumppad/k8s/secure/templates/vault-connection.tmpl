@@ -1,8 +1,0 @@
----
-apiVersion: secrets.hashicorp.com/v1beta1
-kind: VaultConnection
-metadata:
-  name: vault-connection
-  namespace: customer-agent
-spec:
-  address: "http://{{vault_ip}}:8200" # needs replaced with a templated address

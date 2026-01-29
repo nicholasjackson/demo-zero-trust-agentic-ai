@@ -12,7 +12,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/weather/, ''),
       },
       '/api/customer': {
-        target: 'http://localhost:18124',
+        target: 'http://localhost:8124',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/customer/, ''),
       },
