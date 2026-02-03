@@ -8,7 +8,7 @@ REPO_NAME := $(shell git config --get remote.origin.url | sed -n 's/.*\/\([^.]*\
 IMAGE_NAME := weather-tool
 REGISTRY := ghcr.io
 FULL_IMAGE := $(REGISTRY)/$(REPO_OWNER)/$(IMAGE_NAME)
-VERSION ?= 0.0.1
+VERSION ?= 0.1.2
 TAG := $(FULL_IMAGE):$(VERSION)
 
 # Docker build arguments

@@ -1,7 +1,7 @@
 .PHONY: build push run dev clean
 
 IMAGE_NAME ?= ghcr.io/nicholasjackson/chat-ui
-VERSION ?= 0.0.3
+VERSION ?= 0.1.2
 
 build:
 	@echo "Building Docker image: $(IMAGE_NAME):$(VERSION)"

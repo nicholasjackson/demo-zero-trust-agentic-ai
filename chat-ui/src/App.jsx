@@ -6,7 +6,9 @@ import AgentSelector from './components/AgentSelector'
 function App() {
   const auth = useAuth()
   const [selectedAgent, setSelectedAgent] = useState('weather')
-  const [showToolCalls, setShowToolCalls] = useState(false)
+  const [showToolCalls, setShowToolCalls] = useState(() => {
+    return localStorage.getItem('showToolCalls') === 'true'
+  })
   const [showAuthError, setShowAuthError] = useState(false)
 
   // Show error popup when auth error occurs
@@ -50,7 +52,10 @@ function App() {
                   <input
                     type="checkbox"
                     checked={showToolCalls}
-                    onChange={(e) => setShowToolCalls(e.target.checked)}
+                    onChange={(e) => {
+                      setShowToolCalls(e.target.checked)
+                      localStorage.setItem('showToolCalls', e.target.checked)
+                    }}
                     className="sr-only peer"
                   />
                   <div className="w-9 h-5 bg-slate-700 rounded-full peer

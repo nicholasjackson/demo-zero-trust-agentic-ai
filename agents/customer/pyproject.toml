@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiofiles>=24.1.0",
+    "langchain-agent-server>=0.1.0",
     "asyncio>=4.0.0",
     "fastapi>=0.115.0",
     "fastmcp>=2.13.0.2",

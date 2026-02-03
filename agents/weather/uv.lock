@@ -756,6 +756,20 @@ wheels = [
 ]
 
 [[package]]
+name = "langchain-agent-server"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "langchain-core" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/72/d7/208a2c9a9ec87944a16e706a255275318572a3001a7702d289e2fc3187a1/langchain_agent_server-0.1.0.tar.gz", hash = "sha256:91323eab9afd592f796a08cbb04703f04e5f7256f0b3d9cf84fe76944b116984", size = 58768, upload-time = "2026-02-03T11:14:29.686Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4b/16/710d8d04de40fe483c891e7aa0d9204fd1ef887e108c49f14d90925f6ed1/langchain_agent_server-0.1.0-py3-none-any.whl", hash = "sha256:1a32d3bd3f4f2e43bc347adc9174e7981e4f4324200a8b7a9222950cc5a249e3", size = 9255, upload-time = "2026-02-03T11:14:27.832Z" },
+]
+
+[[package]]
 name = "langchain-core"
 version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -784,6 +798,7 @@ dependencies = [
     { name = "fastmcp" },
     { name = "httpx" },
     { name = "langchain" },
+    { name = "langchain-agent-server" },
     { name = "langchain-core" },
     { name = "langchain-mcp-adapters" },
     { name = "langchain-ollama" },
@@ -801,6 +816,7 @@ requires-dist = [
     { name = "fastmcp", specifier = ">=2.13.0.2" },
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "langchain", specifier = ">=1.0.3" },
+    { name = "langchain-agent-server", specifier = ">=0.1.0" },
     { name = "langchain-core", specifier = ">=1.0.3" },
     { name = "langchain-mcp-adapters", specifier = ">=0.1.12" },
     { name = "langchain-ollama", specifier = ">=1.0.0" },
