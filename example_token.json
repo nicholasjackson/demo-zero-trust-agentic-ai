@@ -1,0 +1,42 @@
+{
+  "exp": 1769708128,
+  "iat": 1769704528,
+  "jti": "fd63f0bc-9768-4a0c-918d-7d6f29a96fb0",
+  "iss": "http://keycloak.container.local.jmpd.in:8080/realms/demo",
+  "aud": "account",
+  "sub": "b8e5a1ab-3e4c-4866-a04b-fa75329fab47",
+  "typ": "Bearer",
+  "azp": "demo-app",
+  "sid": "55e963ed-4f9f-4fb8-ae33-ab938956b718",
+  "acr": "1",
+  "allowed-origins": [
+    "*"
+  ],
+  "realm_access": {
+    "roles": [
+      "offline_access",
+      "uma_authorization",
+      "default-roles-demo"
+    ]
+  },
+  "resource_access": {
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  "scope": "profile email",
+  "email_verified": true,
+  "permissions": [
+    "read:customers",
+    "write:customers"
+  ],
+  "name": "John Doe",
+  "preferred_username": "john",
+  "given_name": "John",
+  "family_name": "Doe",
+  "email": "john@example.com"
+}

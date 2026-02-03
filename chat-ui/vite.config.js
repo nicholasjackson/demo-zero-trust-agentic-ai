@@ -7,12 +7,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/weather': {
-        target: 'http://localhost:18123',
+        target: 'http://localhost:8123',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/weather/, ''),
       },
       '/api/customer': {
-        target: 'http://localhost:18124',
+        target: 'http://localhost:8124',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/customer/, ''),
       },

@@ -1,35 +1,59 @@
-import os
-from langchain.agents import create_agent
+import logging
+
+from langchain.agents import create_agent as langchain_create_agent
 from langchain_ollama import ChatOllama
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from vault import get_session_token
 
-customer_mcp_uri = os.getenv("CUSTOMER_MCP_URI", "http://localhost:8001/mcp")
+logger = logging.getLogger(__name__)
 
-client = MultiServerMCPClient(
-    {
-        "customer": {
-            "transport": "streamable_http",  # HTTP transport
-            "url": customer_mcp_uri,
+
+async def create_agent(config, user_token: str, system_prompt: str):
+    """Create an agent instance with the given configuration and user token.
+
+    Args:
+        config: Application configuration.
+        user_token: User's JWT access token.
+        system_prompt: The system prompt for the agent.
+    """
+    # Attempt to create a token for the session using the user's token
+    # Raises an error on failure
+    session_token = get_session_token(config, user_token)
+
+    # Create MCP client with config
+    mcp_client = MultiServerMCPClient(
+        {
+            "weather": {
+                "transport": "streamable_http",
+                "url": config.weather_mcp_uri,
+                "headers": {
+                    "Authorization": f"Bearer {session_token}",
+                },
+            },
+            "customer": {
+                "transport": "streamable_http",
+                "url": config.customer_mcp_uri,
+                "headers": {
+                    "Authorization": f"Bearer {session_token}",
+                },
+            },
         }
-    }
-)
+    )
 
-# Load the system prompt from a file
-prompt_path = os.path.join(os.path.dirname(__file__), "prompt.md")
-with open(prompt_path) as f:
-    system_prompt = f.read()
+    # Define the model to use
+    llm = ChatOllama(
+        model="llama3.2",
+        temperature=0,
+        base_url=config.ollama_host,
+    )
 
-# Define the model to use
-llm = ChatOllama(
-    model="llama3.2",
-    temperature=0,
-)
+    try:
+        tools = await mcp_client.get_tools()
+    except Exception as e:
+        logger.warning(f"Failed to get tools from MCP server: {e}")
+        tools = None
 
-
-# Create an async agent
-async def agent():
-    tools = await client.get_tools()
-    return create_agent(
+    return langchain_create_agent(
         llm,
         system_prompt=system_prompt,
         tools=tools,

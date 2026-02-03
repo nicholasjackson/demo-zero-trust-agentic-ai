@@ -8,7 +8,7 @@ REPO_NAME := $(shell git config --get remote.origin.url | sed -n 's/.*\/\([^.]*\
 IMAGE_NAME := customer-tool
 REGISTRY := ghcr.io
 FULL_IMAGE := $(REGISTRY)/$(REPO_OWNER)/$(IMAGE_NAME)
-VERSION ?= 0.0.1
+VERSION ?= 0.1.3
 TAG := $(FULL_IMAGE):$(VERSION)
 
 # Docker build arguments
@@ -63,8 +63,13 @@ push-version: build tag-version ## Build, tag with git SHA, and push both latest
 	@echo "Pushed: $(TAG)"
 	@echo "Pushed: $(FULL_IMAGE):$(GIT_SHA)"
 
+.PHONY: dev
+dev: ## Run the customer tool locally in dev mode (no Docker)
+	@echo "Starting customer tool in dev mode on port 8001..."
+	python customer.py
+
 .PHONY: run
-run: ## Run the customer tool locally
+run: ## Run the customer tool locally in Docker
 	@echo "Running $(TAG) on port 8001..."
 	docker run -p 8001:8001 \
 		$(TAG)

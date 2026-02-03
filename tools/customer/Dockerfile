@@ -18,7 +18,7 @@ RUN pip install uv
 RUN uv pip install --system --no-cache -r pyproject.toml
 
 # Copy application code
-COPY customer.py .
+COPY customer.py db.py customers.db ./
 
 # Expose the default port
 EXPOSE 8001

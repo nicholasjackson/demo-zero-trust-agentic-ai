@@ -1,9 +1,0 @@
-# Build artifacts
-build/
-
-# Jumppad state
-.jumppad/
-*.state
-
-# Logs
-*.log

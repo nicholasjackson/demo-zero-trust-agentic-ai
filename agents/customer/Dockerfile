@@ -2,20 +2,14 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install git and uv (required for dependencies)
-RUN apt-get update && \
-    apt-get install -y git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Install uv for faster dependency management
-RUN pip install uv
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Copy dependency files
 COPY pyproject.toml uv.lock* ./
 
-# Install dependencies
-RUN uv pip install --system --no-cache -r pyproject.toml
+# Sync dependencies
+RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY src/ ./src/
@@ -30,4 +24,4 @@ ENV PORT=8124
 ENV PYTHONUNBUFFERED=1
 
 # Run our FastAPI server
-CMD ["python", "src/server.py"]
+CMD ["uv", "run", "python", "src/server.py"]
